@@ -1,0 +1,80 @@
+{% extends 'users/detail.html' %}
+
+{% block user_details %}
+  <div class="col-sm-9">
+    <div class="row">
+      <ul class="list-group" id="messages">
+        {% for msg in likes %}
+          <li class="list-group-item" data-message-id="{{ msg.id }}">
+            <a href="/messages/{{ msg.id }}" class="message-link">
+              <a href="/users/{{ msg.user.id }}">
+                <img src="{{ msg.user.image_url }}" alt="User image" class="timeline-image">
+              </a>
+              <div class="message-area">
+                <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
+                <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
+                <p>{{ msg.text }}</p>
+              </div>
+            </a>
+            <form method="POST" action="/messages/{{ msg.id }}/like" class="messages-like">
+              <button 
+                class="btn btn-sm {{ 'btn-primary' if msg in g.user.likes else 'btn-outline-primary' }}" 
+                aria-label="Toggle like"
+              >
+                <i class="fa {{ 'fa-thumbs-up' if msg in g.user.likes else 'fa-thumbs-o-up' }}"></i>
+              </button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Select all like forms
+      const likeForms = document.querySelectorAll('.messages-like');
+
+      likeForms.forEach(form => {
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault(); // Prevent the default form submission
+
+          const formElement = event.target;
+          const messageId = formElement.closest('li').dataset.messageId;
+
+          try {
+            // Send a POST request to the like endpoint
+            const response = await fetch(formElement.action, {
+              method: 'POST',
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest', // Optional: Identify this as an AJAX request
+              },
+            });
+
+            if (response.ok) {
+              // Toggle the button's appearance
+              const button = formElement.querySelector('button');
+              const icon = button.querySelector('i');
+
+              if (button.classList.contains('btn-primary')) {
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-outline-primary');
+                icon.classList.remove('fa-thumbs-up');
+                icon.classList.add('fa-thumbs-o-up');
+              } else {
+                button.classList.remove('btn-outline-primary');
+                button.classList.add('btn-primary');
+                icon.classList.remove('fa-thumbs-o-up');
+                icon.classList.add('fa-thumbs-up');
+              }
+            } else {
+              console.error('Failed to toggle like:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Error toggling like:', error);
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}
