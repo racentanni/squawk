@@ -81,7 +81,7 @@ class User(UserMixin, db.Model):
 
     header_image_url = db.Column(
         db.Text,
-        default="/static/images/warbler-hero.jpg"
+        default="/static/images/squawk-hero.png"
     )
 
     bio = db.Column(
@@ -95,6 +95,24 @@ class User(UserMixin, db.Model):
     password = db.Column(
         db.Text,
         nullable=False,
+    )
+
+    is_admin = db.Column(db.Boolean, default=False)  # New field for admin privileges
+
+    # New fields for social media links
+    twitter_url = db.Column(
+        db.String(200),
+        nullable=True,
+    )
+
+    facebook_url = db.Column(
+        db.String(200),
+        nullable=True,
+    )
+
+    linkedin_url = db.Column(
+        db.String(200),
+        nullable=True,
     )
 
     # Relationship for messages authored by the user
@@ -197,7 +215,7 @@ class User(UserMixin, db.Model):
 
 
 class Message(db.Model):
-    """An individual message ("warble")."""
+    """An individual message ("squauk")."""
 
     __tablename__ = 'messages'
 
@@ -206,16 +224,29 @@ class Message(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
-    # Relationship to the user who authored the message
-    author = db.relationship('User', overlaps="messages")
+    # New field for replies
+    parent_id = db.Column(db.Integer, db.ForeignKey('messages.id', ondelete='CASCADE'), nullable=True)
 
-    # Relationship for users who liked this message
-    liked_by = db.relationship(
-        'User',
-        secondary="likes",
-        overlaps="likes"
-    )
+    # Relationships
+    author = db.relationship('User', overlaps="messages, user_messages")
+    liked_by = db.relationship('User', secondary="likes", overlaps="liked_by_users")
+    replies = db.relationship('Message', backref=db.backref('parent', remote_side=[id]), cascade="all, delete-orphan")
 
+    def __repr__(self):
+        return f"<Message #{self.id}: {self.text[:20]}...>"
+
+class Report(db.Model):
+    """A report for abusive messages."""
+
+    __tablename__ = 'reports'
+
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('messages.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    message = db.relationship('Message', backref='reports')
+    user = db.relationship('User', backref='reports')
 
 def connect_db(app):
     """Connect this database to provided Flask app.

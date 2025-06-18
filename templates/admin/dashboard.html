@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Admin Dashboard</h2>
+
+  <!-- Reported Messages Section -->
+  <h3>Reported Messages</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Report ID</th>
+        <th>Message Text</th>
+        <th>Reported By</th>
+        <th>Timestamp</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for report in reported_messages %}
+      <tr>
+        <td>{{ report.id }}</td>
+        <td>{{ report.text }}</td>
+        <td>{{ report.username }}</td>
+        <td>{{ report.timestamp.strftime('%d %B %Y %H:%M') }}</td>
+        <td>
+          <form method="POST" action="/admin/messages/{{ report.id }}/delete">
+            <button class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Users Section -->
+  <h3>Users</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Admin</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ 'Yes' if user.is_admin else 'No' }}</td>
+        <td>
+          <form method="POST" action="/admin/users/{{ user.id }}/delete">
+            <button class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

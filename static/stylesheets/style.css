@@ -78,18 +78,25 @@ nav form.navbar-form {
   margin-bottom: 0;
   width: 100%;
   font-size: 13px;
-  padding-right: 28px;
+  padding-right: 40px; /* Add space for the button inside the field */
   box-sizing: border-box;
+  position: relative;
 }
 
 #search.form-control + .btn {
   position: absolute;
-  right: 9px;
-  top: 2px;
-  bottom: 4px;
-  z-index: 1;
-  padding: 0;
+  right: 10px; /* Position the button inside the field */
+  top: 50%; /* Center the button vertically */
+  transform: translateY(-50%);
+  background: none;
+  border: none;
   color: #66757f;
+  cursor: pointer;
+  z-index: 1;
+}
+
+#search.form-control + .btn:hover {
+  color: #1c94e0;
 }
 
 #search.form-control + .btn:active,
@@ -210,6 +217,7 @@ nav + .container {
   opacity: 0.7;
   background-size: cover;
   background-position: top center;
+  background-image: url("/static/images/squawk-hero.png");
 }
 
 .full-width {
@@ -340,7 +348,7 @@ nav + .container {
 .card-hero {
   width: 100%;
   position: absolute;
-  top: 0;
+  top: -50px;
   right: 0;
   bottom: 0;
   left: 0;
@@ -404,8 +412,9 @@ p.card-bio {
   width: 100vw;
   left: 0;
   z-index: -1;
-  background-image: url("/static/images/signed-out-home.jpg");
+  background-image: url("/static/images/squawk_logo2.png");
   background-size: cover;
+  background-repeat: no-repeat;
   background-position: center center;
   color: #fff;
   text-align: center;
@@ -499,6 +508,7 @@ p.card-bio {
   right: 0;
   bottom: 0;
   background-color: #62676c;
+  z-index: 0;
 }
 
 #messages.no-hover .message-area {
@@ -612,3 +622,239 @@ p.card-bio {
 .message-404 .form-inline input {
   flex: 1;
 }
+
+.social-links a {
+  pointer-events: auto;
+  z-index: 1;
+  position: relative;
+  text-decoration: none; /* Optional: Remove underline */
+}
+
+.social-links a:hover {
+  text-decoration: underline; /* Optional: Add underline on hover */
+}
+
+.text-muted {
+  color: #6c757d;
+  text-decoration: none;
+}
+
+.text-muted:hover {
+  text-decoration: underline;
+}
+
+.alert {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.alert-info {
+  background-color: #e9f7fd;
+  color: #0c5460;
+  border-color: #bee5eb;
+}
+
+.alert-dismissible .btn-close {
+  color: #0c5460;
+}
+
+.card {
+  background-color: #f8f9fa; /* Light gray background */
+  border: none;
+  border-radius: 8px;
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+.fa-lock {
+  font-size: 3rem;
+}
+
+.text-muted {
+  color: #6c757d;
+  text-decoration: none;
+}
+
+.text-muted:hover {
+  text-decoration: underline;
+}
+
+/* Style for the submit button */
+.btn-primary {
+  background-color: #007bff; /* Bootstrap primary color */
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.75rem 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+  transform: translateY(-2px); /* Slight lift effect */
+}
+
+.btn-primary:active {
+  background-color: #004085; /* Even darker shade on click */
+  transform: translateY(0); /* Reset lift effect */
+}
+
+.btn-primary:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5); /* Focus outline */
+}
+
+.replies {
+  margin-top: 2rem;
+}
+
+.replies .card {
+  background-color: #f8f9fa;
+  border: none;
+  border-radius: 8px;
+}
+
+.replies .card-body {
+  padding: 1rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}
+
+.pagination .page-link {
+  color: #007bff;
+}
+
+.pagination .page-link:hover {
+  background-color: #0056b3;
+  color: #fff;
+}
+
+.reply-form textarea {
+  resize: none;
+}
+
+.reply-form {
+  position: relative;
+  z-index: 1;
+}
+
+/* Like Button */
+.messages-like .btn {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Space between icon and text */
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px; /* Rounded corners */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.messages-like .btn-primary {
+  background-color: #007bff; /* Bootstrap primary color */
+  color: #fff;
+}
+
+.messages-like .btn-outline-primary {
+  border: 1px solid #007bff;
+  color: #007bff;
+}
+
+.messages-like .btn:hover {
+  transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* Unfollow Button */
+.btn-danger {
+  background-color: #dc3545; /* Bootstrap danger color */
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-danger:hover {
+  background-color: #c82333; /* Darker shade on hover */
+  transform: translateY(-2px);
+}
+
+/* Follow Button */
+.btn-outline-success {
+  border: 1px solid #28a745;
+  color: #28a745;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-outline-success:hover {
+  background-color: #28a745;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* Add spacing between buttons */
+.messages-like .btn,
+.btn-danger,
+.btn-outline-success {
+  margin-left: 10px; /* Add space to the right of each button */
+}
+
+.btn-warning {
+  background-color: #ffc107; /* Bootstrap warning color */
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800; /* Darker shade on hover */
+  transform: translateY(-2px);
+}
+
+.table {
+  margin-top: 2rem;
+  border: 1px solid #ddd;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 0.75rem;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+

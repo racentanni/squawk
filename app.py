@@ -4,14 +4,15 @@ from flask import Flask, render_template, request, flash, redirect, session, g, 
 # from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from flask_migrate import Migrate
-from forms import UserAddForm, LoginForm, MessageForm, UserEditForm, ResendConfirmationForm
-from models import db, connect_db, User, Message, Likes
+from forms import UserAddForm, LoginForm, MessageForm, UserEditForm, ResendConfirmationForm, PasswordResetForm, PasswordResetRequestForm
+from models import db, connect_db, User, Message, Likes, Report
 from flask_mail import Mail, Message as MailMessage
 from itsdangerous import URLSafeTimedSerializer
 from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
 from flask_bcrypt import Bcrypt
 from flask_login import login_user, LoginManager, current_user, logout_user
+from utils import save_image, generate_reset_token, verify_reset_token
 
 
 
@@ -30,7 +31,7 @@ app = Flask(__name__)
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ.get('DATABASE_URL', 'postgresql:///warbler'))
+    os.environ.get('DATABASE_URL', 'postgresql:///squawk'))
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -250,6 +251,28 @@ def logout():
     flash("You have successfully logged out", 'success')
     return redirect("/login")
 
+# Admin Dashboard route:
+
+@app.route('/admin', methods=["GET"])
+def admin_dashboard():
+    """Admin dashboard for managing reports and users."""
+    if not current_user.is_authenticated or not current_user.is_admin:
+        flash("Access unauthorized.", "danger")
+        return redirect('/')
+
+    # Fetch reported messages
+    reported_messages = db.session.query(
+        Report.id,
+        Message.text,
+        User.username,
+        Report.timestamp
+    ).join(Message, Report.message_id == Message.id).join(User, Report.user_id == User.id).all()
+
+    # Fetch all users
+    users = User.query.all()
+
+    return render_template('admin/dashboard.html', reported_messages=reported_messages, users=users)
+
   
 
 
@@ -386,28 +409,40 @@ def add_like(message_id):
 def profile():
     """Update profile for current user."""
 
-    if not g.user:
+    if not current_user.is_authenticated:
         flash("Access unauthorized", "danger")
         return redirect("/")
-    
-    user = g.user
+
+    user = current_user
     form = UserEditForm(obj=user)
 
     if form.validate_on_submit():
-        if User.authenticate(user.username, form.password.data):
-            user.username = form.username.data
-            user.email = form.email.data
-            user.image_url = form.image_url.data or "/static/images/default-pic.png"
-            user.header_image_url = form.header_image_url.data or "/static/images/warbler-hero.jpg"
-            user.bio = form.bio.data
-            user.location = form.location.data
+        user.username = form.username.data
+        user.email = form.email.data
+        user.bio = form.bio.data
+        user.location = form.location.data
 
-            db.session.commit()
-            return redirect(f"/users/{user.id}")
-        
-        flash("Wrong password, please try again.", 'danger')
+        # Normalize social media URLs
+        def normalize_url(url):
+            if url and not url.startswith("http://") and not url.startswith("https://"):
+                return f"https://{url}"
+            return url
 
-    return render_template('users/edit.html', form=form, user_id=user.id)
+        user.twitter_url = normalize_url(form.twitter_url.data)
+        user.facebook_url = normalize_url(form.facebook_url.data)
+        user.linkedin_url = normalize_url(form.linkedin_url.data)
+
+        # Handle image uploads
+        if form.image_url.data:
+            user.image_url = save_image(form.image_url.data)
+        if form.header_image_url.data:
+            user.header_image_url = save_image(form.header_image_url.data)
+
+        db.session.commit()
+        flash("Profile updated successfully!", "success")
+        return redirect(f"/users/{user.id}")
+
+    return render_template('users/edit.html', form=form, user=user)
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -460,10 +495,19 @@ def messages_add():
 
 @app.route('/messages/<int:message_id>', methods=["GET"])
 def messages_show(message_id):
-    """Show a message."""
+    """Show a message with paginated replies."""
+    msg = Message.query.get_or_404(message_id)  # Fetch the parent message
+    page = request.args.get('page', 1, type=int)  # Get the current page number
+    per_page = 5  # Number of replies per page
 
-    msg = Message.query.get(message_id)
-    return render_template('messages/show.html', message=msg)
+    # Paginate replies
+    paginated_replies = Message.query.filter_by(parent_id=message_id).paginate(page=page, per_page=per_page)
+
+    return render_template(
+        'messages/show.html',
+        message=msg,
+        replies=paginated_replies
+    )
 
 
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])
@@ -484,6 +528,29 @@ def messages_destroy(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
+@app.route('/messages/<int:message_id>/reply', methods=["POST"])
+def reply_to_message(message_id):
+    """Reply to a specific message."""
+    if not current_user.is_authenticated:
+        flash("Access unauthorized.", "danger")
+        return redirect('/')
+
+    parent_message = Message.query.get_or_404(message_id)
+    text = request.form.get('text')
+
+    if not text:
+        flash("Reply cannot be empty.", "danger")
+        return redirect(f'/messages/{message_id}')
+
+    reply = Message(
+        text=text,
+        user_id=current_user.id,
+        parent_id=parent_message.id
+    )
+    db.session.add(reply)
+    db.session.commit()
+    flash("Reply posted successfully!", "success")
+    return redirect(f'/messages/{message_id}')
 
 ##############################################################################
 # Homepage and error pages
@@ -538,3 +605,79 @@ def add_header(req):
     req.headers["Expires"] = "0"
     req.headers['Cache-Control'] = 'public, max-age=0'
     return req
+
+# Routes for password reset
+
+@app.route('/reset-password', methods=["GET", "POST"])
+def reset_password_request():
+    """Request a password reset."""
+    if current_user.is_authenticated:
+        return redirect('/')
+
+    form = PasswordResetRequestForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            send_password_reset_email(user)
+        flash("If an account with that email exists, a password reset link has been sent.", "info")
+        return redirect('/login')
+
+    return render_template('auth/reset_password_request.html', form=form)
+
+
+@app.route('/reset-password/<token>', methods=["GET", "POST"])
+def reset_password(token):
+    """Reset the password."""
+    if current_user.is_authenticated:
+        return redirect('/')
+
+    user = verify_reset_token(token)
+    if not user:
+        flash("The password reset link is invalid or has expired.", "danger")
+        return redirect('/reset-password')
+
+    form = PasswordResetForm()
+    if form.validate_on_submit():
+        hashed_pwd = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
+        user.password = hashed_pwd
+        db.session.commit()
+        flash("Your password has been reset successfully!", "success")
+        return redirect('/login')
+
+    return render_template('auth/reset_password.html', form=form)
+
+def send_password_reset_email(user):
+    """Send a password reset email."""
+    token = generate_reset_token(user)
+    reset_url = url_for('reset_password', token=token, _external=True)
+    msg = MailMessage(
+        "Password Reset Request",
+        sender=app.config['MAIL_DEFAULT_SENDER'],
+        recipients=[user.email]
+    )
+    msg.body = f"""To reset your password, visit the following link:
+{reset_url}
+
+If you did not make this request, simply ignore this email.
+"""
+    mail.send(msg)
+
+# Route for reporting abusive behavior
+
+@app.route('/messages/<int:message_id>/report', methods=["POST"])
+def report_message(message_id):
+    """Report a message for abuse."""
+    if not current_user.is_authenticated:
+        flash("Access unauthorized.", "danger")
+        return redirect('/')
+
+    msg = Message.query.get_or_404(message_id)
+
+    # Save the report to the database
+    report = Report(message_id=msg.id, user_id=current_user.id)
+    db.session.add(report)
+    db.session.commit()
+
+    print("Debug: Flash message triggered")  # Debugging
+    flash("Message reported successfully!", "info")
+    return redirect(f'/messages/{message_id}')

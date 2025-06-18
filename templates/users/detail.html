@@ -2,8 +2,14 @@
 
 {% block content %}
 
-<div id="warbler-hero" class="full-width"></div>
+<!-- Header Image -->
+<div id="warbler-hero" class="full-width">
+  <img src="{{ user.header_image_url }}" alt="Header Image for {{ user.username }}" class="header-image">
+</div>
+
+<!-- Profile Avatar -->
 <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="profile-avatar">
+
 <div class="row full-width">
   <div class="container">
     <div class="row justify-content-end">
@@ -30,7 +36,7 @@
           <li class="stat">
             <p class="small">Likes</p>
             <h4>
-              <a href="/users/{{user.id}}/likes">{{ user.likes|length }}</a>
+              <a href="/users/{{ user.id }}/likes">{{ user.likes | length }}</a>
             </h4>
           </li>
           <div class="ml-auto">
@@ -62,6 +68,25 @@
     <h4 id="sidebar-username">@{{ user.username }}</h4>
     <p>{{ user.bio }}</p>
     <p class="user-location"><span class="fa fa-map-marker"></span>{{ user.location }}</p>
+
+    <!-- Social Media Links -->
+    <div class="social-links">
+      {% if user.twitter_url %}
+      <p><a href="{{ 'https://' + user.twitter_url if not user.twitter_url.startswith('http') else user.twitter_url }}" target="_blank">
+        <span class="fa fa-twitter"></span> Twitter
+      </a></p>
+      {% endif %}
+      {% if user.facebook_url %}
+      <p><a href="{{ 'https://' + user.facebook_url if not user.facebook_url.startswith('http') else user.facebook_url }}" target="_blank">
+        <span class="fa fa-facebook"></span> Facebook
+      </a></p>
+      {% endif %}
+      {% if user.linkedin_url %}
+      <p><a href="{{ 'https://' + user.linkedin_url if not user.linkedin_url.startswith('http') else user.linkedin_url }}" target="_blank" rel="noopener noreferrer">
+        <span class="fa fa-linkedin"></span> LinkedIn
+      </a></p>
+      {% endif %}
+    </div>
   </div>
 
   {% block user_details %}

@@ -1,4 +1,8 @@
 {% extends 'base.html' %} {% block content %}
+<p>
+  TEST: g.user is {{ g.user }} and {% if g.user %}truthy{% else %}falsy{% endif
+  %}
+</p>
 
 <div class="bg"></div>
 <div class="row justify-content-center">
@@ -46,7 +50,7 @@
           class="messages-like"
         >
           <button
-            class="btn btn-sm {{ 'btn-primary' if message in g.user.likes else 'btn-outline-primary' }}"
+            class="btn btn-sm {{ 'btn-outine-primary' if message in g.user.likes else 'btn-outline-primary' }}"
             aria-label="Toggle like"
           >
             <i
@@ -57,6 +61,101 @@
         {% endif %}
       </li>
     </ul>
+    <p>Debug: Message Object = {{ message }}</p>
+    <p>Debug: Message ID = {{ message.id }}</p>
+    <p>Debug: Message Text = {{ message.text }}</p>
+    <p>Debug: g.user = {{ g.user }}</p>
+
+    <!-- <h4>Replies ({{ replies.total }})</h4> -->
+
+    {% if g.user %}
+    <form method="POST" action="/messages/{{ message.id }}/report">
+      <button class="btn btn-warning btn-sm">Report Abuse</button>
+    </form>
+    {% endif %}
+    <!-- Replies Section -->
+    <div class="replies mt-4">
+      <h4>Replies</h4>
+      {% for reply in replies.items %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <p>
+            <strong
+              ><a href="/users/{{ reply.author.id }}"
+                >@{{ reply.author.username }}</a
+              ></strong
+            >: {{ reply.text }}
+          </p>
+          <p class="text-muted">
+            {{ reply.timestamp.strftime('%d %B %Y %H:%M') }}
+          </p>
+        </div>
+      </div>
+      {% else %}
+      <p class="text-muted">No replies yet.</p>
+      {% endfor %}
+
+      <!-- Pagination Controls -->
+      <nav aria-label="Replies Pagination">
+        <ul class="pagination">
+          {% if replies.has_prev %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="?page={{ replies.prev_num }}"
+              aria-label="Previous"
+            >
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          {% endif %} {% for page_num in range(1, replies.pages + 1) %}
+          <li
+            class="page-item {% if page_num == replies.page %}active{% endif %}"
+          >
+            <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+          </li>
+          {% endfor %} {% if replies.has_next %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="?page={{ replies.next_num }}"
+              aria-label="Next"
+            >
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    <div
+      id="loading-spinner"
+      class="spinner-border text-primary"
+      role="status"
+      style="display: none"
+    >
+      <span class="sr-only">Loading...</span>
+    </div>
+    <!-- <p>TEST: This is after the replies loop</p> -->
+
+    <!-- Reply Form -->
+    {% if g.user %}
+    <div class="reply-form mt-4">
+      <h5>Post a Reply</h5>
+      <form method="POST" action="/messages/{{ message.id }}/reply">
+        <div class="form-group mb-3">
+          <textarea
+            name="text"
+            class="form-control"
+            rows="3"
+            placeholder="Write your reply here..."
+            required
+          ></textarea>
+        </div>
+        <button class="btn btn-primary">Reply</button>
+      </form>
+    </div>
+    {% endif %}
   </div>
 </div>
 
@@ -104,6 +203,16 @@
         }
       });
     }
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const paginationLinks = document.querySelectorAll(".pagination .page-link");
+    paginationLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        document.getElementById("loading-spinner").style.display = "block";
+      });
+    });
   });
 </script>
 

@@ -2,32 +2,38 @@
 
 {% block content %}
 
-  <div class="row justify-content-md-center">
-    <div class="col-md-4">
-      <h2 class="join-message">Edit Your Profile.</h2>
-      <form method="POST" id="user_form">
+  <div class="row justify-content-md-center mt-5">
+    <div class="col-md-6">
+      <h2 class="text-center mb-4">Edit Your Profile</h2>
+      <form method="POST" id="user_form" enctype="multipart/form-data" class="p-4 border rounded shadow-sm bg-light">
         {{ form.hidden_tag() }}
 
+        <!-- Display errors for all fields -->
         {% for field in form if field.widget.input_type != 'hidden' and field.name != 'password' %}
-          {% for error in field.errors %}
-            <span class="text-danger">{{ error }}</span>
-          {% endfor %}
-          {{ field(placeholder=field.label.text, class="form-control") }}
+          <div class="form-group mb-3">
+            {% for error in field.errors %}
+              <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+            {{ field.label(class="form-label") }}
+            {{ field(placeholder=field.label.text, class="form-control") }}
+          </div>
         {% endfor %}
 
-        <p>To confirm changes, enter your password:</p>
-        {% if form.password.errors %}
-          {% for error in form.password.errors %}
-            <span class="text-danger">
-            {{ error }}
-          </span>
-          {% endfor %}
-        {% endif %}
-        {{ form.password(placeholder="Enter your password to confirm", class="form-control") }}
+        <!-- Password confirmation -->
+        <div class="form-group mb-3">
+          <p class="mb-1">To confirm changes, enter your password:</p>
+          {% if form.password.errors %}
+            {% for error in form.password.errors %}
+              <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+          {% endif %}
+          {{ form.password(placeholder="Enter your password to confirm", class="form-control") }}
+        </div>
 
-        <div class="edit-btn-area">
-          <button class="btn btn-success">Edit this user!</button>
-          <a href="/users/{{ user_id }}" class="btn btn-outline-secondary">Cancel</a>
+        <!-- Buttons -->
+        <div class="edit-btn-area d-flex justify-content-between mt-4">
+          <button class="btn btn-success px-4">Save Changes</button>
+          <a href="/users/{{ user_id }}" class="btn btn-outline-secondary px-4">Cancel</a>
         </div>
       </form>
     </div>

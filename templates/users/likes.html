@@ -7,11 +7,11 @@
         {% for msg in likes %}
           <li class="list-group-item" data-message-id="{{ msg.id }}">
             <a href="/messages/{{ msg.id }}" class="message-link">
-              <a href="/users/{{ msg.user.id }}">
-                <img src="{{ msg.user.image_url }}" alt="User image" class="timeline-image">
+              <a href="/users/{{ msg.author.id }}">
+                <img src="{{ msg.author.image_url }}" alt="User image" class="timeline-image">
               </a>
               <div class="message-area">
-                <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
+                <a href="/users/{{ msg.author.id }}">@{{ msg.author.username }}</a>
                 <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
                 <p>{{ msg.text }}</p>
               </div>

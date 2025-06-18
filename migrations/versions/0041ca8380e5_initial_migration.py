@@ -25,8 +25,8 @@ def upgrade():
         batch_op.alter_column('message_id',
                existing_type=sa.INTEGER(),
                nullable=False)
-        batch_op.drop_constraint(batch_op.f('likes_message_id_key'), type_='unique')
-        batch_op.drop_column('id')
+        # Remove or comment out the following line:
+        # batch_op.drop_column('id')
 
     with op.batch_alter_table('users', schema=None) as batch_op:
         batch_op.alter_column('email',
