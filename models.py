@@ -223,14 +223,21 @@ class Message(db.Model):
     text = db.Column(db.String(140), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-
-    # New field for replies
     parent_id = db.Column(db.Integer, db.ForeignKey('messages.id', ondelete='CASCADE'), nullable=True)
+
+    # New fields for links and images
+    link_url = db.Column(db.String(200), nullable=True)
+    image_url = db.Column(db.String(200), nullable=True)
 
     # Relationships
     author = db.relationship('User', overlaps="messages, user_messages")
     liked_by = db.relationship('User', secondary="likes", overlaps="liked_by_users")
-    replies = db.relationship('Message', backref=db.backref('parent', remote_side=[id]), cascade="all, delete-orphan")
+    replies = db.relationship(
+        'Message',
+        backref=db.backref('parent', remote_side=[id]),
+        primaryjoin="Message.parent_id == Message.id",  # Explicit join condition
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Message #{self.id}: {self.text[:20]}...>"

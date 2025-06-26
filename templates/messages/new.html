@@ -5,17 +5,44 @@
     <div class="col-md-6">
       <form method="POST">
         {{ form.csrf_token }}
+        
+        <!-- Text Field -->
         <div>
           {% if form.text.errors %}
             {% for error in form.text.errors %}
               <span class="text-danger">
-            {{ error }}
-          </span>
+                {{ error }}
+              </span>
             {% endfor %}
           {% endif %}
           {{ form.text(placeholder="What's happening?", class="form-control", rows="3") }}
         </div>
-        <button class="btn btn-outline-success btn-block">Add my message!</button>
+
+        <!-- Link URL Field -->
+        <div class="mt-3">
+          {% if form.link_url.errors %}
+            {% for error in form.link_url.errors %}
+              <span class="text-danger">
+                {{ error }}
+              </span>
+            {% endfor %}
+          {% endif %}
+          {{ form.link_url(placeholder="Add a link (optional)", class="form-control") }}
+        </div>
+
+        <!-- Image URL Field -->
+        <div class="mt-3">
+          {% if form.image_url.errors %}
+            {% for error in form.image_url.errors %}
+              <span class="text-danger">
+                {{ error }}
+              </span>
+            {% endfor %}
+          {% endif %}
+          {{ form.image_url(placeholder="Add an image URL (optional)", class="form-control") }}
+        </div>
+
+        <button class="btn btn-outline-success btn-block mt-3">Add my message!</button>
       </form>
     </div>
   </div>

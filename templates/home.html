@@ -47,26 +47,49 @@
   <div class="col-lg-6 col-md-8 col-sm-12">
     <ul class="list-group" id="messages">
       {% for msg in messages %}
-        <li class="list-group-item message-card">
-          <a href="/messages/{{ msg.id }}" class="message-link"></a>
-          <a href="/users/{{ msg.author.id }}">
-            <img src="{{ msg.author.image_url }}" alt="" class="timeline-image">
-          </a>
-          <div class="message-area">
-            <a href="/users/{{ msg.author.id }}">@{{ msg.author.username }}</a>
-            <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
-            <p class="single-message">{{ msg.text }}</p>
-          </div>
-          <form method="POST" action="/messages/{{ msg.id }}/like" class="messages-like">
-            <button class="
+      <li class="list-group-item message-card">
+        <a href="/messages/{{ msg.id }}" class="message-link"></a>
+        <a href="/users/{{ msg.author.id }}">
+          <img src="{{ msg.author.image_url }}" alt="" class="timeline-image" />
+        </a>
+        <div class="message-area">
+          <a href="/users/{{ msg.author.id }}">@{{ msg.author.username }}</a>
+          <span class="text-muted"
+            >{{ msg.timestamp.strftime('%d %B %Y') }}</span
+          >
+          <p class="single-message">{{ msg.text }}</p>
+
+          <!-- Render link if it exists -->
+          {% if msg.link_url %}
+          <p>
+            <a href="{{ msg.link_url }}" target="_blank">{{ msg.link_url }}</a>
+          </p>
+          {% endif %}
+
+          <!-- Render image if it exists -->
+          {% if msg.image_url %}
+          <img
+            src="{{ msg.image_url }}"
+            alt="Message Image"
+            class="img-fluid"
+          />
+          {% endif %}
+        </div>
+        <form
+          method="POST"
+          action="/messages/{{ msg.id }}/like"
+          class="messages-like"
+        >
+          <button
+            class="
               btn 
               btn-sm 
               {{'btn-primary' if msg.id in likes else 'btn-secondary'}}"
-            >
-              <i class="fa fa-thumbs-up"></i> 
-            </button>
-          </form>
-        </li>
+          >
+            <i class="fa fa-thumbs-up"></i>
+          </button>
+        </form>
+      </li>
       {% endfor %}
     </ul>
   </div>

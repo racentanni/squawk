@@ -100,7 +100,7 @@
       </div>
     </nav>
 
-    <!-- Modal for composing a warble -->
+    <!-- Modal for composing a squawk -->
     <div
       class="modal fade compose-modal"
       id="composeWarbleModal"
@@ -115,17 +115,11 @@
             <h5 class="modal-title" id="composeWarbleModalLabel">
               Compose a Squawk
             </h5>
-            <!-- <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button> -->
           </div>
           <form method="POST" action="/messages/new">
+            {{ form.csrf_token }}
             <div class="modal-body">
+              <!-- Text Field -->
               <div class="form-group">
                 <textarea
                   name="text"
@@ -134,6 +128,26 @@
                   placeholder="What's happening?"
                   required
                 ></textarea>
+              </div>
+          
+              <!-- Link URL Field -->
+              <div class="form-group mt-3">
+                <input
+                  type="text"
+                  name="link_url"
+                  class="form-control"
+                  placeholder="Add a link (optional)"
+                />
+              </div>
+          
+              <!-- Image URL Field -->
+              <div class="form-group mt-3">
+                <input
+                  type="text"
+                  name="image_url"
+                  class="form-control"
+                  placeholder="Add an image URL (optional)"
+                />
               </div>
             </div>
             <div class="modal-footer">

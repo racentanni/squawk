@@ -81,6 +81,11 @@ def add_user_to_g():
         g.user = None
         print("g.user set to None")  # Debugging
 
+@app.context_processor
+def inject_message_form():
+    """Inject the MessageForm into all templates."""
+    return {'form': MessageForm()}
+
 connect_db(app)
 
 with app.app_context():
@@ -472,25 +477,30 @@ def user_likes(user_id):
 
 @app.route('/messages/new', methods=["POST"])
 def messages_add():
-    """Add a new message (warble)."""
+    """Add a new message (squawk)."""
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    text = request.form["text"]
-    if not text:
-        flash("Message cannot be empty.", "danger")
-        return redirect("/")
+    form = MessageForm()
+    print("Debug: Form validation status:", form.validate_on_submit())  # Debugging
+    print("Debug: Form data:", form.data)  # Debugging
 
-    message = Message(text=text, user_id=g.user.id)
-    db.session.add(message)
-    db.session.commit()
+    if form.validate_on_submit():
+        message = Message(
+            text=form.text.data,
+            link_url=form.link_url.data,
+            image_url=form.image_url.data,
+            user_id=g.user.id
+        )
+        db.session.add(message)
+        db.session.commit()
+        flash("Message created!", "success")
+        return redirect(f"/users/{g.user.id}")
 
-    flash("Warble created!", "success")
-    return redirect(f"/users/{g.user.id}")
-
-    # return render_template('messages/new.html', form=form)
+    flash("Message creation failed.", "danger")
+    return redirect("/")
 
 
 @app.route('/messages/<int:message_id>', methods=["GET"])

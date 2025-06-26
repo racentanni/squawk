@@ -8,7 +8,8 @@ class MessageForm(FlaskForm):
 
     text = TextAreaField('Message', validators=[DataRequired()])
     parent_id = HiddenField('Parent ID')  # New hidden field for replies
-
+    link_url = StringField('Link URL', validators=[Optional(), URL()])
+    image_url = StringField('Image URL', validators=[Optional(), URL()])
 
 class UserAddForm(FlaskForm):
     """Form for adding users."""

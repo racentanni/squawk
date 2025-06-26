@@ -39,6 +39,19 @@
             {% endif %} {% endif %}
           </div>
           <p class="single-message">{{ message.text }}</p>
+          {% if message.link_url %}
+          <p>
+            <a href="{{ message.link_url }}" target="_blank"
+              >{{ message.link_url }}</a
+            >
+          </p>
+          {% endif %} {% if message.image_url %}
+          <img
+            src="{{ message.image_url }}"
+            alt="Message Image"
+            class="img-fluid"
+          />
+          {% endif %}
           <span class="text-muted"
             >{{ message.timestamp.strftime('%d %B %Y') }}</span
           >
